@@ -1349,7 +1349,7 @@ class Application
     sub_pub_hash
   end
 
-  def execute_connections
+  def execute_connections(sub_pub_info)
     if self.scalable
       connections, new_group_instances, cleaned_group_overrides = elaborate(self.requires, self.group_overrides)
       set_connections(connections)
@@ -1359,6 +1359,9 @@ class Application
       #publishers
       self.connections.each do |conn|
         pub_inst = self.component_instances.find(conn.from_comp_inst_id)
+        unless sub_pub_info.empty?
+          next if not sub_pub_info[pub_inst.to_hash.to_s]
+        end
         pub_ginst = self.group_instances.find(pub_inst.group_instance_id)
         tag = conn._id.to_s
 
@@ -1389,6 +1392,9 @@ class Application
       handle = RemoteJob.create_parallel_job
       self.connections.each do |conn|
         pub_inst = self.component_instances.find(conn.from_comp_inst_id)
+        unless sub_pub_info.empty?
+          next if not sub_pub_info[pub_inst.to_hash.to_s]
+        end
         sub_inst = self.component_instances.find(conn.to_comp_inst_id)
         sub_ginst = self.group_instances.find(sub_inst.group_instance_id)
         tag = ""
@@ -2221,7 +2227,9 @@ class Application
     unless pending_ops.empty? or ((pending_ops.length == 1) and (pending_ops[0].class == SetGroupOverridesOp))
 
       all_ops_ids = pending_ops.map{ |op| op._id.to_s }
-      execute_connection_op = ExecuteConnectionsOp.new(prereq: all_ops_ids)
+      sub_pub_info = {}
+      component_ops.each { |comp_spec, value| sub_pub_info[comp_spec] = true unless component_ops[comp_spec][:new_component].nil? }
+      execute_connection_op = ExecuteConnectionsOp.new(sub_pub_info: sub_pub_info, prereq: all_ops_ids)
       pending_ops.push execute_connection_op
     end
 
