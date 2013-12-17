@@ -39,6 +39,7 @@ class GearScaleCtl
     exit 1 if not check_scalability(params, action, opts)
 
     params['event'] = 'add-gear' == action ?  'scale-up' : 'scale-down'
+    params['factor'] = opts["factor"] if opts["factor"]
 
     request = RestClient::Request.new(:method => :post, :url => base_url, :timeout => 600,
         :headers => {:accept => 'application/json', :user_agent => 'OpenShift'},
@@ -185,7 +186,8 @@ begin
     ['--app',       '-a', GetoptLong::REQUIRED_ARGUMENT],
     ['--uuid',      '-u', GetoptLong::REQUIRED_ARGUMENT],
     ['--namespace', '-n', GetoptLong::REQUIRED_ARGUMENT],
-    ['--server',    '-s', GetoptLong::REQUIRED_ARGUMENT]
+    ['--server',    '-s', GetoptLong::REQUIRED_ARGUMENT],
+    ['--factor',    '-f', GetoptLong::REQUIRED_ARGUMENT]
   )
 
   args.each {|opt, arg| opts[opt[2..-1]] = arg.to_s}

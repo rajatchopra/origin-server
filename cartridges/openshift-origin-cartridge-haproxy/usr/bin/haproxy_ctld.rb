@@ -283,7 +283,8 @@ class Haproxy
     def add_gear(verbose=false)
         @last_scale_up_time = Time.now
         @log.info("GEAR_UP - capacity: #{self.session_capacity_pct}% gear_count: #{self.gear_count} sessions: #{self.sessions} up_thresh: #{@gear_up_pct}%")
-        res=`#{ENV['OPENSHIFT_HAPROXY_DIR']}/usr/bin/add-gear -n #{self.gear_namespace}  -a #{ENV['OPENSHIFT_APP_NAME']} -u #{ENV['OPENSHIFT_GEAR_UUID']} 2>&1`
+        factor = 1 + (self.gear_count*(self.session_capacity_pct/(MAX_SESSIONS_PER_GEAR*0.9) - 1)).to_i
+        res=`#{ENV['OPENSHIFT_HAPROXY_DIR']}/usr/bin/add-gear -n #{self.gear_namespace}  -a #{ENV['OPENSHIFT_APP_NAME']} -u #{ENV['OPENSHIFT_GEAR_UUID']} -f #{factor}  2>&1`
         exit_code = $?.exitstatus
         @log.info("GEAR_UP - add-gear: exit: #{exit_code}  stdout: #{res}")
         if exit_code != 0

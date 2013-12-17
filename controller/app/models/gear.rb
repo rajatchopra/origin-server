@@ -166,9 +166,15 @@ class Gear
   #   success = 0
   # @raise [OpenShift::NodeException] on failure
   def add_component(component, init_git_url=nil)
-    result_io = ResultIO.new
+    result_io =   ResultIO.new
     unless self.removed
       result_io = get_proxy.add_component(self, component, init_git_url)
+    end
+    process_add_component(component, result_io)
+  end
+
+  def process_add_component(component, result_io)
+    unless self.removed
       component.process_properties(result_io)
       application.process_commands(result_io, component._id, self)
     end
@@ -179,6 +185,7 @@ class Gear
     end
     result_io
   end
+
 
   # Performs the post-configuration steps for the specified component on the gear.
   #

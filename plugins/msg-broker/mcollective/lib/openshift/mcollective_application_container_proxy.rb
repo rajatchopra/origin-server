@@ -812,6 +812,25 @@ module OpenShift
         return result_io
       end
 
+      def get_add_component_job(gear, component, template_git_url=nil)
+        cart_data = nil
+
+        args = build_base_gear_args(gear)
+        args = build_base_component_args(component, args)
+
+        app = gear.application
+        downloaded_cart =  app.downloaded_cart_map.values.find { |c| c["versioned_name"]==component.cartridge_name}
+        if downloaded_cart
+          args['--with-cartridge-manifest'] = downloaded_cart["original_manifest"]
+          args['--with-software-version'] = downloaded_cart["version"]
+        end
+
+        if template_git_url.present?
+          args['--with-template-git-url'] = template_git_url
+        end
+        RemoteJob.new('openshift-origin-node', 'configure', args)
+      end
+
       #
       # Post configuration for a cartridge on a gear.
       #

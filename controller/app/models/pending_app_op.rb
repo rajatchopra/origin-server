@@ -138,6 +138,10 @@ class PendingAppOp
     component_instance
   end
 
+  def handle_parallel_results(tag, gear_id, output, status)
+    ResultIO.new(status, output, gear_id) 
+  end
+
   def action_message
     "#{self.class.to_s} failed"
   end

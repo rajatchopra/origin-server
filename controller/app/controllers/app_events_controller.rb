@@ -81,12 +81,16 @@ class AppEventsController < BaseController
     when "scale-up"
       authorize! :scale_cartridge, @application
       web_framework_component_instance = @application.component_instances.select{ |c| CartridgeCache.find_cartridge(c.cartridge_name,@application).categories.include?("web_framework") }.first
-      r = @application.scale_by(web_framework_component_instance.group_instance_id, 1)
+      factor = params[:factor].to_i 
+      factor = 1 if factor==0
+      r = @application.scale_by(web_framework_component_instance.group_instance_id, factor)
       msg = "Application #{@application.name} has scaled up"
     when "scale-down"
       authorize! :scale_cartridge, @application
       web_framework_component_instance = @application.component_instances.select{ |c| CartridgeCache.find_cartridge(c.cartridge_name,@application).categories.include?("web_framework") }.first
-      r = @application.scale_by(web_framework_component_instance.group_instance_id, -1)
+      factor = params[:factor].to_i 
+      factor = 1 if factor==0
+      r = @application.scale_by(web_framework_component_instance.group_instance_id, -1*factor)
       msg = "Application #{@application.name} has scaled down"
     when "thread-dump"
       authorize! :view_code_details, @application
